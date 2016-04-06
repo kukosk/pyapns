@@ -3,7 +3,7 @@ import _json as json
 import struct
 import binascii
 import datetime
-from StringIO import StringIO as _StringIO
+from io import StringIO as _StringIO
 from OpenSSL import SSL, crypto
 from twisted.internet import reactor, defer
 from twisted.internet.protocol import (
@@ -12,7 +12,7 @@ from twisted.internet.ssl import ClientContextFactory
 from twisted.application import service
 from twisted.protocols.basic import LineReceiver
 from twisted.python import log
-from zope.interface import Interface, implements
+from zope.interface import Interface, implementer
 from twisted.web import xmlrpc
 
 
@@ -162,13 +162,12 @@ class APNSClientFactory(ReconnectingClientFactory):
     log.msg('APNSClientFactory clientConnectionFailed reason=%s' % reason)
     ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
-
+@implementer(IAPNSService)
 class APNSService(service.Service):
   """ A Service that sends notifications and receives 
   feedback from the Apple Push Notification Service
   """
   
-  implements(IAPNSService)
   clientProtocolFactory = APNSClientFactory
   feedbackProtocolFactory = APNSFeedbackClientFactory
   
@@ -233,7 +232,7 @@ class APNSService(service.Service):
         return r
       
       factory.deferred.addBoth(cancel_timeout)
-    except Exception, e:
+    except Exception(e):
       log.err('APNService feedback error initializing: %s' % str(e))
       raise
     return factory.deferred
