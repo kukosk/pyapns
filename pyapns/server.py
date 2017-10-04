@@ -1,5 +1,5 @@
 from __future__ import with_statement
-import _json as json
+import json
 import struct
 import binascii
 import datetime
@@ -322,11 +322,11 @@ def encode_notifications(tokens, notifications):
   
   fmt = "!BH32sH%ds"
   structify = lambda t, p: struct.pack(fmt % len(p), 0, 32, t, len(p), p)
-  binaryify = lambda t: t.decode('hex')
-  if type(notifications) is dict and type(tokens) in (str, unicode):
+  binaryify = lambda t: binascii.unhexlify(t)
+  if type(notifications) is dict and type(tokens) in (str, bytes):
     tokens, notifications = ([tokens], [notifications])
   if type(notifications) is list and type(tokens) is list:
-    return ''.join(map(lambda y: structify(*y), ((binaryify(t), json.dumps(p, separators=(',',':'), ensure_ascii=False).encode('utf-8'))
+    return b''.join(map(lambda y: structify(*y), ((binaryify(t), json.dumps(p, separators=(',',':'), ensure_ascii=False).encode('utf-8'))
                                     for t, p in zip(tokens, notifications))))
 
 def decode_feedback(binary_tuples):
